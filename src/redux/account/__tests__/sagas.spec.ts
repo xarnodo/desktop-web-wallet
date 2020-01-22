@@ -9,12 +9,14 @@ import {
 } from '../actions';
 import { ACCOUNT_CREATION_STAGES, ACCOUNT_INITIAL_STATE } from '..';
 import bip from 'bip39';
-import { Fantom } from '~/utility/web3';
+// import { Fantom } from '~/utility/web3';
 import { assocPath } from 'ramda';
 import { ACCOUNT_ACTIONS } from '../constants';
 import { CALL_HISTORY_METHOD } from 'connected-react-router';
 import Web3 from 'web3';
 import FakeProvider from 'web3-fake-provider';
+import Fantom from 'web3-functions'
+
 
 describe('account sagas', () => {
   bip.generateMnemonic = jest.fn().mockImplementation(() => 'MNEMONIC');

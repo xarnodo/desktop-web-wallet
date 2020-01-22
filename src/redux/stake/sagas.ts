@@ -9,6 +9,8 @@ import {
   call,
   all,
 } from 'redux-saga/effects';
+import Fantom from 'web3-functions'
+
 import {
   STAKE_ACTIONS,
   delegateByAddress,
@@ -29,7 +31,6 @@ import {} from './handlers';
 import { IAccountState } from '../account';
 // import { setDopdownAlert } from "~/redux/notification/actions";
 import { getDataWithQueryString } from '../../api';
-import { Fantom } from '~/utility/web3';
 
 const delegatorByAddressApi = async publicKey => {
   return getDataWithQueryString(

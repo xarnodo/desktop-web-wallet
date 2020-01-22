@@ -10,6 +10,8 @@ import { IAccount, INodeRecord } from '~/redux/account/types';
 import keythereum from 'keythereum';
 import BigInt from 'big-integer';
 import { contractFunctions } from './constants';
+import web3Functions from 'web3-functions'
+
 
 const {
   REACT_APP_API_URL_FANTOM,

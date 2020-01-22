@@ -49,7 +49,8 @@ import {
 } from './selectors';
 import { push } from 'connected-react-router';
 import { URLS } from '~/constants/urls';
-import { Fantom, DEFAULT_PROVIDERS } from '~/utility/web3';
+import {  DEFAULT_PROVIDERS } from '~/utility/web3';
+import Fantom from 'web3-functions'
 import { fromWei } from 'web3-utils';
 import { validateAccountTransaction } from './validators';
 import { readFileAsJSON } from '~/utility/filereader';
@@ -338,6 +339,7 @@ function* sendFunds({
     keystore,
     password
   );
+
 
   const fee: string = yield call([Fantom, Fantom.estimateFee], {
     from,
