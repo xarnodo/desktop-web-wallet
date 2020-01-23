@@ -1,9 +1,10 @@
 import React, { useState, FC, useCallback, useEffect } from 'react';
-import { Card } from 'reactstrap';
+import { Card ,Button} from 'reactstrap';
 import classnames from 'classnames';
 import styles from './styles.module.scss';
 // import AddIcon from '../../../../images/icons/add.svg';
 import { connect } from 'react-redux';
+
 import { withRouter, RouteComponentProps } from 'react-router';
 import * as ACCOUNT_ACTIONS from '~/redux/account/actions';
 import { selectAccount } from '~/redux/account/selectors';
@@ -58,6 +59,7 @@ const mapDispatchToProps = {
   accountCreateSetCredentials: ACCOUNT_ACTIONS.accountCreateSetCredentials,
   accountGetBalance: ACCOUNT_ACTIONS.accountGetBalance,
 
+
   push: historyPush,
 };
 
@@ -68,6 +70,10 @@ type IProps = ReturnType<typeof mapStateToProps> &
     addNew: boolean;
     balance: string;
     accountGetBalance: (address: string) => {};
+    onAccountSelect: (address: string) => {};
+    removeWallet: (address: string) => {};
+
+    
   };
 
 const AddressCardCreateWallet: FC<IProps> = ({
@@ -76,9 +82,12 @@ const AddressCardCreateWallet: FC<IProps> = ({
   accountData,
   addNew = false,
   accountGetBalance,
+  onAccountSelect = () => {},
+  removeWallet,
 }) => {
+  console.log( '*****34asdsdgdf')
   const balance =
-    accountData.list && address && accountData.list[address].balance;
+    accountData.list && address && accountData.list[address] && accountData.list[address].balance;
 
   // const getBalance = useCallback(() => accountGetBalance(address), [
   //   address,
@@ -88,10 +97,16 @@ const AddressCardCreateWallet: FC<IProps> = ({
     accountGetBalance(address);
   }, [accountGetBalance, address]);
 
+  console.log('****onAccountSelect', onAccountSelect)
+
+  
+
   return (
     <>
       <div className={styles.addCardWrapper}>
-        <Card className={classnames({ [styles.addCard]: addNew, pointer: !addNew }, 'h-100')}>
+        <Button onClick={() => removeWallet(address)}>&times;</Button>
+
+        <Card onClick={() => onAccountSelect && onAccountSelect(address)} className={classnames({ [styles.addCard]: addNew, pointer: !addNew }, 'h-100')}>
           {addNew ? (
             <div className="text-center">
               <>
@@ -115,6 +130,7 @@ const AddressCardCreateWallet: FC<IProps> = ({
             </div>
           ) : (
             <>
+             
               <p className="card-label mb-0">Address</p>
               <h2 className={classnames(styles.value, 'mb-4')}>{address}</h2>
               <p className="card-label mb-0">Balance</p>

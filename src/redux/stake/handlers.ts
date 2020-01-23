@@ -129,7 +129,7 @@ export const setDelegatorByAddressFailure = (
 // }: TDelegateByAddress) => ({
 //   type: `${STAKE_ACTIONS.DELEGATE_BY_ADDRESSES}_FAILURE`,
 //   payload: { publicKey },
-// });
+// });${STAKE_ACTIONS.DELEGATE_BY_ADDRESS}_SUCCESS
 
 export const ACCOUNT_HANDLERS = {
   [`${STAKE_ACTIONS.DELEGATE_BY_ADDRESS}_SUCCESS`]: setDelegatorByAddress,

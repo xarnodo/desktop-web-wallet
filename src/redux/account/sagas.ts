@@ -35,6 +35,8 @@ import {
   accountReconnectProvider,
   accountGetPrivateKey,
   accountSendPasswordCheck,
+  accountRemoveAction,
+  accountSetList,
 } from './actions';
 import {
   ACCOUNT_CREATION_STAGES,
@@ -467,6 +469,45 @@ function* getFee({ gasLimit, cb }: ReturnType<typeof accountGetTransferFee>) {
   }
 }
 
+
+function* removeAccount({ publicAddress }: ReturnType<typeof accountRemoveAction>) {
+  // yield delay(300);
+
+  try {
+    // const fee: string = yield call(Fantom.estimateFee, {
+    //   gasLimit,
+    // });
+    const { list }: IAccountState = yield select(selectAccount);
+    let isAddressFound = false
+    console.log(list, '*****sajdjasdj')
+    const prevListObj = list
+
+
+
+    const prevList = Object.keys(list);
+      if(prevList && prevList.length > 0){
+        prevList.forEach(item => {
+          if(item.toLowerCase() === publicAddress.toLowerCase()){
+            delete prevListObj[item];
+            isAddressFound = true
+           
+          }
+
+        })
+
+      }
+      console.log('****prevListObj', prevListObj)
+
+      if(isAddressFound){
+        return yield put(
+          accountSetList(prevListObj)
+        );
+      } 
+  } catch (e) {
+    console.log(e);
+  }
+}
+
 function* uploadKeystore({
   file,
   password,
@@ -623,6 +664,11 @@ export function* accountSaga() {
     ACCOUNT_ACTIONS.CREATE_RESTORE_MNEMONICS,
     createRestoreMnemonics
   );
+  yield takeLatest(
+    ACCOUNT_ACTIONS.REMOVE_ACCOUNT,
+    removeAccount
+  );
+
   yield takeLatest(
     ACCOUNT_ACTIONS.CREATE_RESTORE_PRIVATE_KEY,
     createRestorePrivateKey

@@ -1,10 +1,10 @@
 import React, { FC, useCallback } from 'react';
-import { Container, Row, Col, Card } from 'reactstrap';
+import { Container, Row, Col, Card, Button} from 'reactstrap';
 import Identicon from '~/view/general/Identicon';
 import { Address } from '~/view/components/account/Address';
 import { selectAccount } from '~/redux/account/selectors';
 import { connect } from 'react-redux';
-import { push as historyPush, push } from 'connected-react-router';
+import { push as historyPush } from 'connected-react-router';
 import { URLS } from '~/constants/urls';
 import styles from './styles.module.scss';
 import { pick } from 'ramda';
@@ -27,6 +27,8 @@ const mapStateToProps = (state: IState): Pick<IAccountState, 'list'> =>
   pick(['list'])(selectAccount(state));
 const mapDispatchToProps = {
   push: historyPush,
+  accountRemoveAction: ACCOUNT_ACTIONS.accountRemoveAction,
+
 };
 
 type IProps = ReturnType<typeof mapStateToProps> &
@@ -35,9 +37,14 @@ type IProps = ReturnType<typeof mapStateToProps> &
 const AccountListUnconnected: FC<IProps> = ({
   list,
   push,
+  accountRemoveAction,
+
 }) => {
+
+  console.log(list, '*****34dgdf')
   const onAccountSelect = useCallback(
     (address: string) => {
+      debugger
       push(URLS.ACCOUNT.BASE(address));
     },
     [push]
@@ -50,6 +57,10 @@ const AccountListUnconnected: FC<IProps> = ({
       push('/account/restore');
     }
   };
+  const removeWallet = address => {
+    accountRemoveAction(address)
+
+  }
 
   return (
     <Layout>
@@ -65,23 +76,32 @@ const AccountListUnconnected: FC<IProps> = ({
         <div className={styles.homeWrapper}>
           <Container className={styles.container}>
             <Row>
+             
               {Object.values(list).length > 0 &&
                 Object.values(list).map(account => {
                   return (
-                    <Col
-                      lg={6}
-                      md={6}
-                      className={styles.marginBottom}
-                      onClick={() => onAccountSelect(account.publicAddress)}
-                    >
-                      <AddressBalanceCard
-                        address={account.publicAddress}
-                      />
-                    </Col>
+                    <>
+                      {/* <Button color="primary" onClick={() => removeWallet(account.publicAddress)}>
+          X
+                      </Button> */}
+                      <Col
+                        lg={6}
+                        md={6}
+                        className={styles.marginBottom}
+                       
+                      >
+                        <AddressBalanceCard
+                          address={account.publicAddress}
+                          onAccountSelect={onAccountSelect}
+                          removeWallet={removeWallet}
+                        />
+                      </Col>
+                    </>
                   );
                 })}
               <Col lg={6} md={6} className={styles.marginBottom}>
                 <AddressBalanceCard
+                 
                   addNew
                 />
               </Col>
@@ -175,8 +195,8 @@ const AccountListUnconnected: FC<IProps> = ({
                 <Col lg={12} className="mb-4">
                   <button
                     type="button"
-                      className={classnames('bg-topaz', styles.mobileBtn)}
-                      onClick={() => goToRoute('access')}
+                    className={classnames('bg-topaz', styles.mobileBtn)}
+                    onClick={() => goToRoute('access')}
                   >
                     Access your wallet
                   </button>

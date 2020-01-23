@@ -8,6 +8,19 @@ export const accountSetCreate = (create: Partial<IAccountState['create']>) => ({
   create,
 });
 
+
+export const accountRemoveAction = (publicAddress: IAccount['publicAddress']) => {
+  return {
+    type: ACCOUNT_ACTIONS.REMOVE_ACCOUNT,
+    publicAddress,
+  };
+};
+
+export const accountSetAction = (create: Partial<IAccountState['create']>) => ({
+  type: ACCOUNT_ACTIONS.SET_CREATE,
+  create,
+});
+
 export const accountSetFTMtoUSD = (price: string) => {
   return {
     type: ACCOUNT_ACTIONS.SET_FTM_USD,
