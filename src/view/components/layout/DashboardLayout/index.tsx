@@ -4,7 +4,6 @@ import Sidebar from './DashboardSidebar';
 import styles from './styles.module.scss';
 import classnames from 'classnames';
 import { Modal, ModalBody, ModalHeader, ModalFooter, Button } from 'reactstrap';
-
 import {
   CopyIcon,
   QrIcon,
@@ -13,7 +12,7 @@ import {
 import { DashboardModal } from '../../Modal';
 import QRCodeIcon from '~/view/general/QRCodeIcon/index';
 import { copyToClipboard } from '~/utility/clipboard';
-import { RouteComponentProps } from 'react-router';
+import {  RouteComponentProps, withRouter } from 'react-router';
 import { selectAccount } from '~/redux/account/selectors';
 import { connect } from 'react-redux';
 import * as ACCOUNT_ACTIONS from '~/redux/account/actions';
@@ -41,11 +40,15 @@ const DashboardLayout: FC<IProps> = ({
   accountData,
   accountRemoveAction,
 }) => {
+  const { t } = useTranslation();
+
   const [modal, setModal] = useState(false);
   const [logoutModal, setLogoutModal] = useState(false);
+  const text = "copiedClipboard"
 
-  const onClick = useCallback(event => copyToClipboard(event, address), [
+  const onClick = useCallback(event => copyToClipboard(event, address, text, t), [
     address,
+    t,
   ]);
   const cardShow =
     location.pathname.includes('send') || location.pathname.includes('receive');
@@ -62,16 +65,10 @@ const DashboardLayout: FC<IProps> = ({
 
   const handleLogout = () => {
     setLogoutModal(true);
+    localStorage.setItem("isModalOpen", 'true')
   };
 
-  const handleWalletLogout = () => {
-    accountRemoveAction(account && account.publicAddress);
-    setLogoutModal(false);
-  };
-  const { t } = useTranslation();
-  const onClose = () => {
-    setLogoutModal(false);
-  };
+ 
   const { pathname } = location;
   const screen = pathname.slice(pathname.lastIndexOf('/') + 1);
 
@@ -110,6 +107,30 @@ const DashboardLayout: FC<IProps> = ({
       break;
   }
 
+
+
+  const handleWalletLogout = () => {
+    accountRemoveAction(account && account.publicAddress, (res) => {
+      localStorage.setItem("isModalOpen", 'false')
+     setLogoutModal(false)
+     history.push('/')
+
+    })
+
+    
+    
+
+ }
+
+ useEffect(() => {
+   localStorage.setItem("isModalOpen", 'false')
+ }, []);
+
+ const onClose = () => {
+   setLogoutModal(false)
+   localStorage.setItem("isModalOpen", 'false')
+ }
+
   const RenderLayout = () => {
     return wallet ? (
       <>
@@ -136,25 +157,21 @@ const DashboardLayout: FC<IProps> = ({
 
           <ModalBody>
             <div className={styles.content}>
-              <p>{t('logoutDesc')}.</p>
-              <p>{t('reverseAction')}.</p>
+            <p>{t('logoutDesc')}</p>
+            <p>{t('reverseAction')}</p>
+              
             </div>
           </ModalBody>
 
           <ModalFooter>
             <div className="text-center w-100">
-              <Button className="mx-3" color="secondary" onClick={onClose}>
-                Cancel
-              </Button>
-
-              <Button
-                className="mx-3"
-                color="primary"
-                type="submit"
-                onClick={handleWalletLogout}
-              >
-                Logout
-              </Button>
+            <Button className="mx-3" color="secondary" onClick={onClose}>
+            {t('cancel')}
+            </Button>
+  
+            <Button className="mx-3" color="primary" type="submit" onClick={handleWalletLogout}>
+            {t('logout')}
+            </Button>
             </div>
           </ModalFooter>
         </form>
@@ -269,10 +286,12 @@ const DashboardLayout: FC<IProps> = ({
     </>
   );
 };
+const newComp = withRouter(DashboardLayout)
 
 const DashboardLayoutRouter = connect(
   mapStateToProps,
   mapDispatchToProps
-)(DashboardLayout);
+)(newComp);
+
 
 export default DashboardLayoutRouter;

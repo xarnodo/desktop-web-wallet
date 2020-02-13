@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   takeLatest,
@@ -51,7 +52,8 @@ import {
 } from './selectors';
 import { push } from 'connected-react-router';
 import { URLS } from '~/constants/urls';
-import { Fantom, DEFAULT_PROVIDERS } from '~/utility/web3';
+import {  DEFAULT_PROVIDERS } from '~/utility/web3';
+import Fantom from 'web3-functions'
 import { fromWei } from 'web3-utils';
 import { validateAccountTransaction } from './validators';
 import { readFileAsJSON } from '~/utility/filereader';
@@ -61,13 +63,13 @@ import { path } from 'ramda';
 import axios from 'axios';
 import { getTransactions } from '../transactions/api';
 import fileDownload from 'js-file-download';
+import { createBrotliCompress } from 'zlib';
 
 function* createSetCredentials({
   create,
 }: ReturnType<typeof accountCreateSetCredentials>) {
   const mnemonic: string = bip.generateMnemonic();
-  const { publicAddress } = Fantom.mnemonicToKeys(mnemonic);
-  const { privateKey } = Fantom.mnemonicToKeys(mnemonic);
+  const { privateKey, publicAddress } = yield call(Fantom.mnemonicToKeys, mnemonic);;
   const pass = create.password || '';
 
   const keystore = Fantom.getKeystore(privateKey, pass);
@@ -103,7 +105,7 @@ function* createSetConfirm() {
 
   let pKey = privateKey || '';
   if (!privateKey) {
-    const keys = Fantom.mnemonicToKeys(mnemonic);
+    const keys = yield call(Fantom.mnemonicToKeys, mnemonic);;
     pKey = keys.privateKey;
   }
 
@@ -143,7 +145,7 @@ function* createSetRestoreCredentials({
       publicAddress = keys.publicAddress;
     } else {
       const mnemonic = localStorage.getItem('mnemonic') || '';
-      const keys = Fantom.mnemonicToKeys(mnemonic);
+      const keys = yield call(Fantom.mnemonicToKeys, mnemonic);;
       privateKey = keys.privateKey;
       publicAddress = keys.publicAddress;
     }
@@ -164,28 +166,41 @@ function* createSetRestoreCredentials({
 function* createRestoreMnemonics({
   mnemonic,
 }: ReturnType<typeof accountCreateRestoreMnemonics>) {
-  const { publicAddress } = Fantom.mnemonicToKeys(mnemonic || '');
+  const { publicAddress } = yield call(Fantom.mnemonicToKeys, mnemonic);;
   localStorage.setItem('mnemonic', mnemonic || '');
 
 
   const { list }: IAccountState = yield select(selectAccount);
  const prevList = Object.keys(list);
+ const prevListObj =  { ...list}; 
       let isAddressFound = false
+      let isFound = false
       if(prevList && prevList.length > 0){
-        prevList.forEach(item => {
+        prevList.forEach((item: any) => {
           if(item.toLowerCase() === publicAddress.toLowerCase() ){
-            isAddressFound = true
+            if(prevListObj[item].publicAddress){
+              isAddressFound = true
+            } else {
+              delete prevListObj[item];
+              isFound = true
+            }
           }
 
         })
 
       }
 
+      if(isFound){
+        yield put(
+          accountSetList({...prevListObj})
+        );
+      }
+
     if (isAddressFound)
       return yield put(
         accountSetCreate({
           errors: {
-            mnemonic: "An account with this address already exist.",
+            mnemonic: "An account with this address already exist",
           },
         })
       );
@@ -209,22 +224,35 @@ function* createRestorePrivateKey({
 
   const { list }: IAccountState = yield select(selectAccount);
  const prevList = Object.keys(list);
+ const prevListObj =  { ...list}; 
       let isAddressFound = false
+      let isFound = false
       if(prevList && prevList.length > 0){
-        prevList.forEach(item => {
+        prevList.forEach((item: any) => {
           if(item.toLowerCase() === publicAddress.toLowerCase() ){
-            isAddressFound = true
+            if(prevListObj[item].publicAddress){
+              isAddressFound = true
+            } else {
+              delete prevListObj[item];
+              isFound = true
+            }
           }
 
         })
 
       }
 
+      if(isFound){
+        yield put(
+          accountSetList({...prevListObj})
+        );
+      }
+
     if (isAddressFound)
       return yield put(
         accountSetCreate({
           errors: {
-            privateKey: "An account with this address already exist.",
+            privateKey: "An account with this address already exist",
           },
         })
       );
@@ -244,7 +272,7 @@ function* getPrivateKey({
   mnemonic,
   cb,
 }: ReturnType<typeof accountGetPrivateKey>) {
-  const { privateKey } = yield Fantom.mnemonicToKeys(mnemonic);
+  const { privateKey } = yield call(Fantom.mnemonicToKeys, mnemonic);;
   cb(privateKey);
   // return privateKey
 }
@@ -260,14 +288,22 @@ function* getBalance({ id }: ReturnType<typeof accountGetBalance>) {
       return;
     }
 
+    const res = localStorage.getItem("isModalOpen")
+    if(res === 'true'){
+      return;
+    }
+
+
     yield put(
       accountSetAccount(id, {
         is_loading_balance: true,
       })
     );
 
+
     // const result = yield call([Fantom, Fantom.getBalance], id);
     const { error, data } = yield call(getTransactions, id, 0, 10);
+    console.log(error, '******error')
     if (!error && data.data && data.data.account) {
       const balanceStr = data.data.account.balance.toString();
       const balance = balanceStr;
@@ -373,6 +409,7 @@ function* sendFunds({
       value: amount.toString(),
       memo: message,
       privateKey,
+      isWeb: true,
     });
     cb(true);
 
@@ -478,6 +515,7 @@ function* uploadKeystore({
 }: ReturnType<typeof accountUploadKeystore>) {
   try {
     yield put(accountSetCreate({ errors: {} }));
+    // eslint-disable-next-line react-hooks/rules-of-hooks
 
     const { icon } = yield select(selectAccountCreate);
     const { list }: IAccountState = yield select(selectAccount);
@@ -497,22 +535,34 @@ function* uploadKeystore({
         })
       );
       const prevList = Object.keys(list);
-      let isAddressFound = false
+      const prevListObj =  { ...list}; 
+      let isAddressFound = false;
+      let isFound = false;
       if(prevList && prevList.length > 0){
-        prevList.forEach(item => {
+        prevList.forEach((item: any) => {
           if(item.toLowerCase() === `0x${keystore.address}`){
-            isAddressFound = true
+            if(prevListObj[item].publicAddress){
+              isAddressFound = true
+            } else {
+              delete prevListObj[item];
+              isFound = true
+            }
           }
 
         })
 
+      }
+      if(isFound){
+        yield put(
+          accountSetList({...prevListObj})
+        );
       }
 
     if (isAddressFound)
       return yield put(
         accountSetCreate({
           errors: {
-            keystore: "An account with this address already exist.",
+            keystore: "An account with this address already exist",
           },
         })
       );
@@ -531,7 +581,7 @@ function* uploadKeystore({
     console.log('***err', e)
     yield put(
       accountSetCreate({
-        errors: { keystore: 'Invalid keystore file or password.' },
+        errors: { keystore: "Invalid keystore file or password" },
       })
     );
   }
@@ -589,7 +639,7 @@ function* reconnectProvider() {
 }
 
 
-function* removeAccount({ publicAddress }: ReturnType<typeof accountRemoveAction>) {
+function* removeAccount({ publicAddress, cb }: ReturnType<typeof accountRemoveAction>) {
   // yield delay(300);
   try {
     // const fee: string = yield call(Fantom.estimateFee, {
@@ -612,13 +662,15 @@ function* removeAccount({ publicAddress }: ReturnType<typeof accountRemoveAction
           accountSetList({...prevListObj})
         );
       } 
-      yield delay(3000);
-      yield put(push('/'));
+      yield delay(2000);
+      cb(true)
+      // yield put(push('/'));
 
 
   } catch (e) {
     console.log(e);
-    yield put(push('/'));
+    cb(false)
+    // yield put(push('/'));
   }
 }
 

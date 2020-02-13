@@ -9,7 +9,11 @@ import React, { useState, useCallback } from 'react';
 import classnames from 'classnames';
 import { Row, Col, Card, Collapse } from 'reactstrap';
 import styles from './styles.module.scss';
-import { CopyIcon } from 'src/view/components/svgIcons';
+import i18n from "i18next";
+import activityMockData from './activityMockData';
+import { SendIcon, ReceiveIcon, CopyIcon } from 'src/view/components/svgIcons';
+import { Link } from 'react-router-dom';
+import { any } from 'prop-types';
 import { copyToClipboard } from '~/utility/clipboard';
 import Web3 from 'web3';
 import moment from 'moment';
@@ -18,17 +22,17 @@ import { useTranslation } from 'react-i18next';
 const FANTOM_WEB_URL = 'https://explorer.fantom.network';
 
 const SubView = (props: any) => {
-  const { value, to, fee, newDate, memo, t } = props;
+  const { value, to, fee, newDate, memo, t} = props;
+  const text = "copiedClipboard"
+
   // const { hash = false, title, value } = props;
-  const onClickTo = useCallback(event => copyToClipboard(event, to), [to]);
-  const onClickHash = useCallback(event => copyToClipboard(event, value), [
-    value,
-  ]);
+  const onClickTo = useCallback(event => copyToClipboard(event, to, text, t), [t, to]);
+  const onClickHash = useCallback(event => copyToClipboard(event, value, text, t), [t, value]);
 
   return (
     <>
       <div className={styles.subView}>
-        <p className={styles.subViewTitle}>To</p>
+        <p className={styles.subViewTitle}>{t("Recipient")}</p>
         <p className={styles.subViewValue}>
           <a target="_blank" href={`${FANTOM_WEB_URL}/address/${to}`}>
             {to}
@@ -77,26 +81,30 @@ const SubView = (props: any) => {
   );
 };
 
+ const formatActivities = (activityDate, trans) => {
+  const t = new Date(activityDate * 1000);
+  const month = moment(t).format("MMM");
+  const date = moment(t).format("DD");
+  const d = date[0] === "0" ? date[1] : date;
+  const time = moment(t).format("hh:mm A");
+  const year = moment(t).format("YYYY");
+  const {language} = i18n;
+  const dateString = `${trans(month)} ${d}${trans("th")}, ${year} ${time}`;
+  if (language === "chi")
+    return `${year}年 ${trans(month)} ${d}${trans("th")},  ${time}`;
+ return dateString;
+};
+
 const Activities = (props: any) => {
   const newTime = new Date(props.data.timestamp * 1000);
   const { time, ftm, subView = [], t } = props;
   const [isOpen, setIsOpen] = useState(false);
-  const newDate = moment(newTime).format('MMM DD, hh:mm a');
+  const newDate = formatActivities(props.data.timestamp , t);
   const isRecieve = props.data.from === props.address.toLowerCase();
   return (
     <div className={styles.activities}>
       <div className={styles.activitiesRow} onClick={() => setIsOpen(!isOpen)}>
-        {/* <p className={styles.status}>
-          {isRecieve ? <SendIcon /> : <ReceiveIcon />}
-          {isRecieve ? 'Sent' : t('receive')}
-        </p> */}
-        <div
-          className={classnames(
-            styles.timeFtmWrapperm,
-            'd-flex justify-content-between align-items-center w-100'
-          )}
-        >
-          {/* <p className={styles.time}>{newDate}</p> */}
+        <div className="d-flex align-items-center justify-content-between w-100">
           <p className={styles.time}>
             <span>Jan</span>
             <span>13</span>

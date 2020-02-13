@@ -123,7 +123,7 @@ export default props => {
                 <LanguageDropDown />
               </li>
               <li className="mb-0">
-                <a onClick={props.handleLogout}>
+                <a style={{ cursor: 'pointer'}} onClick={props.handleLogout}>
                   <img src={LogoutIcon} alt="yh" />
                   Logout
                 </a>

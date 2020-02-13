@@ -227,7 +227,7 @@ const Stake = props => {
       stakeValueMin: parseFloat(stakeValue) < 1,
       stakeValueInvalid:
         stakeValue === '' || stakeValue === undefined || stakeValue === null,
-      stakeValueMax: parseFloat(stakeValue) > account.balance,
+      stakeValueMax: parseFloat(stakeValue) > account &&account.balance,
       maxBalance: false,
     };
 
@@ -236,7 +236,7 @@ const Stake = props => {
 
     const fee = parseFloat(transactionFee) * 2;
     const totalAmount = Number(stakeValue) + fee;
-    if (totalAmount > Number(account.balance)) {
+    if (totalAmount > Number(account &&account.balance)) {
       setErrors({ ...errors, maxBalance: true });
       return;
     }
@@ -246,7 +246,7 @@ const Stake = props => {
     } else {
       setStep(step + 1);
     }
-  }, [account.balance, errors, isEdit, stakeValue, step, transactionFee]);
+  }, [account, errors, isEdit, stakeValue, step, transactionFee]);
 
   const onWithdrawAmount = () => {
     const { withdrawAmount, id } = props;
@@ -355,14 +355,16 @@ const Stake = props => {
             handleStep={handleStep}
             handleModal={event => {
               const fee = parseFloat(transactionFee) * 2;
-              const totalAmount = Number(stakeValue) + fee;
-              if (totalAmount > Number(account.balance)) {
-                // setErrors({ ...errors, maxBalance: true})
-                copyToClipboard(event, account.publicAddress, true, fee);
-                return;
-              }
-              setModal(true);
-              setType('unStake');
+    const totalAmount = Number(stakeValue) + fee;
+    if(totalAmount > Number(account.balance)){
+      // setErrors({ ...errors, maxBalance: true})
+      const text = ""
+
+      copyToClipboard(event, account.publicAddress, text,t, true, fee)
+      return 
+    } 
+    setModal(true);
+              setType('unStake')
             }}
           />
         );
@@ -407,23 +409,24 @@ const Stake = props => {
   };
 
   const getButtonTitle = () => {
-    if (type === 'stake') {
-      if (inProcess) {
-        return 'Staking...';
+    if(type === 'stake'){
+      if(inProcess){
+        return t("staking")
       }
-      return t('stake');
-    }
-    if (type === 'unStake') {
-      if (inProcess) {
-        return 'Unstaking...';
+      return t("stake")
+    } 
+     if (type === 'unStake'){
+      if(inProcess){
+        return t("unstaking")
       }
       return t('unstake');
     }
-    if (type === 'withdraw') {
-      if (inProcess) {
-        return 'Withdrawing...';
+    if (type === 'withdraw'){
+      if(inProcess){
+        return t("withdrawing")
       }
-      return 'Withdraw';
+      return t("withdraw")
+
     }
   };
 
@@ -440,13 +443,7 @@ const Stake = props => {
         <ModalBody className={styles.body}>
           <Input
             type="password"
-            label={`${t('enterWalletPasswordModal')} ${
-              type === 'stake'
-                ? t('stake')
-                : type === 'withdraw'
-                ? 'withdraw'
-                : t('unstake')
-            }`}
+            label={`${t('enterWalletPasswordModal')} ${type === 'stake' ? t('stake'): type === 'withdraw' ? t('withdraw') : t('unstake')}`}
             value={password}
             placeholder={t('enterPassword')}
             handler={value => {
@@ -535,20 +532,26 @@ const Stake = props => {
             <Card className="text-center">
               <div className={styles.availableWrapper}>
                 <h3 className="mb-0">
-                  {t('your')} {stakedAmount} {t('FTMAvail')}!
+                  {t('your')}
+                  {' '}
+                  {stakedAmount}
+                  {' '}
+                  {t('FTMAvail')}
                 </h3>
                 <button
-                  onClick={event => {
-                    const fee = parseFloat(transactionFee) * 2;
-                    const totalAmount = Number(stakeValue) + fee;
-                    if (totalAmount > Number(account.balance)) {
-                      // setErrors({ ...errors, maxBalance: true})
-                      copyToClipboard(event, account.publicAddress, true, fee);
-                      return;
-                    }
-                    setModal(true);
-                    setType('withdraw');
-                  }}
+                  onClick={event => { 
+                  const fee = parseFloat(transactionFee) * 2;
+    const totalAmount = Number(stakeValue) + fee;
+    if(totalAmount > Number(account.balance)){
+      // setErrors({ ...errors, maxBalance: true})
+      const text = "copiedClipboard"
+
+      copyToClipboard(event, account.publicAddress,text,t, true, fee, true)
+      return 
+    } 
+    setModal(true);
+              setType('withdraw')
+              }}
                   type="button"
                 >
                   {t('withdrawToWallet')}
@@ -563,21 +566,25 @@ const Stake = props => {
     return null;
   };
 
-  const deactivatedEpoch = Number(
-    (selectedAddress && selectedAddress.deactivatedEpoch) || 0
-  );
-  const deactivatedTime = Number(
-    (selectedAddress && selectedAddress.deactivatedTime) || 0
-  );
+    const deactivatedEpoch = Number(
+      (selectedAddress && selectedAddress.deactivatedEpoch) || 0
+    );
+    const deactivatedTime = Number(
+      (selectedAddress && selectedAddress.deactivatedTime) || 0
+    );
 
-  const date1 = new Date(deactivatedTime * 1000);
-  date1.setDate(date1.getDate() + 7);
-  const date2 = new Date();
-  const startTime = moment(date1, 'YYYY/MM/DD HH:mm');
-  const endTime = moment(date2, 'YYYY/MM/DD HH:mm');
+    const date1 = new Date(deactivatedTime * 1000);
+    date1.setDate(date1.getDate() + 7);
+    const date2 = new Date();
+    const startTime = moment(date1, 'YYYY/MM/DD HH:mm');
+    const endTime = moment(date2, 'YYYY/MM/DD HH:mm');
 
-  const timeLeft = startTime.diff(endTime, 'hours', true);
-  // parseFloat(Web3.utils.fromWei(selectedAddress.stakedAmount)).toFixed(5)}
+    const timeLeft = startTime.diff(endTime, 'hours', true);
+    // parseFloat(Web3.utils.fromWei(selectedAddress.stakedAmount)).toFixed(5)}
+  
+
+
+
 
   const stakeDetails =
     stakes && stakes.length > 0
@@ -612,10 +619,16 @@ const Stake = props => {
             <p className="card-label mb-4">{t('overview')}</p>
             <div className="text-right">
               <h2 className="pt-3">
-                {convertFTMValue(parseFloat(account.balance))} FTM
+                {convertFTMValue(parseFloat(account.balance))}
+                {' '}
+FTM
               </h2>
               <h3 className="opacity-5 mb-3">{t('availableStake')}</h3>
-              <h2 className="pt-3">{stakedAmount} FTM</h2>
+              <h2 className="pt-3">
+                {stakedAmount}
+                {' '}
+FTM
+              </h2>
               <h3 className="opacity-5 mb-3">{t('currentlyStaking')}</h3>
               <h2 className="pt-3">Moniker</h2>
               <h3 className="opacity-5 mb-3">{t('Validator')}</h3>
@@ -625,13 +638,21 @@ const Stake = props => {
 
         <Col md={6} className="mb-6">
           <Card className="h-100 ">
-            <p className="card-label mb-4">Rewards</p>
+            <p className="card-label mb-4">{t("rewards")}</p>
             <div className="text-right">
               <h2 className="pt-3">64%</h2>
               <h3 className="opacity-5 mb-3">{t('Current APR')}</h3>
-              <h2 className="pt-3">{claimedRewards} FTM</h2>
+              <h2 className="pt-3">
+                {claimedRewards}
+                {' '}
+FTM
+              </h2>
               <h3 className="opacity-5 mb-3">{t('claimedRewards')}</h3>
-              <h2 className="pt-3">{pendingRewards} FTM</h2>
+              <h2 className="pt-3">
+                {pendingRewards}
+                {' '}
+FTM
+              </h2>
               <h3 className="opacity-5 mb-3">{t('availableClaim')}</h3>
             </div>
           </Card>

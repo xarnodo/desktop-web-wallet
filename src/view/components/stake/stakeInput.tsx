@@ -18,7 +18,7 @@ const { t } = useTranslation();
   if(errors.stakeValueMax){
     errorTxt = t("notEnoughFTM")
   } else if(errors.stakeValueMin){
-    errorTxt = 'Minimum stake of 1 FTM required'
+    errorTxt = t('minStakeReq')
 
   } else if (errors.stakeValueInvalid){
     errorTxt = t("invalidStakeAmount")
@@ -32,13 +32,16 @@ const { t } = useTranslation();
   //   : errors.stakeValueMin ? 'Minimum stake of 1 FTM required': 'Invalid stake amount';
   return (
     <Card className="mx-auto text-center pt-5 pb-6" style={{ maxWidth: 670 }}>
-      <h2>How much FTM would you like to stake?</h2>
+      <h2>
+        {t("howMuchFTM")}
+?
+      </h2>
       <div className="mx-auto w-100" style={{ maxWidth: 480 }}>
         <DashboardInput
           lg
           type="number"
           placeholder="0"
-          rightLabel="Max"
+          rightLabel={t("max")}
           value={stakeValue}
           error={{
             isError: errors.stakeValueInvalid || errors.stakeValueMax || errors.stakeValueMin || errors.maxBalance,

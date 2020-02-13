@@ -313,22 +313,12 @@ const TransferFunds: FC<IProps> = ({
       },
       callback
     );
-  }, [
-    sendingErrors,
-    password,
-    amount,
-    data.publicAddress,
-    accountSendPasswordCheck,
-    to,
-    memo,
-    callback,
-    accountGetBalance,
-    transactionsGetList,
-  ]);
+  }, [sendingErrors, password, amount, data.publicAddress, accountSendPasswordCheck, to, memo, callback, accountGetBalance, transactionsGetList]);
+  const text = "copiedClipboard"
 
   const onClick = useCallback(
-    event => copyToClipboard(event, localStorage.getItem('txHash') || ''),
-    []
+    event => copyToClipboard(event, localStorage.getItem('txHash') || '', text, t),
+    [t]
   );
   const getAmountErrorText = () => {
     const maxAmount = parseFloat(transactionFee) * 2;

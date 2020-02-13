@@ -15,10 +15,12 @@ import { AccountCreateSuccess } from '~/view/pages/account/AccountCreateSuccess'
 import { AccountRestoreRouter } from '~/view/pages/account/AccountRestoreRouter';
 import { AccountRestoreCredentials } from '~/view/pages/account/AccountRestoreCredentials';
 
-
 import AccessWallet from '~/view/pages/accessWallet';
 
+
+
 const MainRouter = props => {
+  
   console.log("props: ", props);
   return (
     <HashRouter>
